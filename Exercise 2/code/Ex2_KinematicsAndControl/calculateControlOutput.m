@@ -17,6 +17,10 @@ lambda = atan2(yg-y, xg-x);     % angle of the vector pointing from the robot to
 alpha = lambda - theta;         % angle of the vector pointing from the robot to the goal in the robot frame
 alpha = normalizeAngle(alpha);
 
+
+
+beta = -normalizeAngle(lambda + thetag);
+
 % the following paramerters should be used:
 % Task 2:
 % parameters.Kalpha, parameters.Kbeta, parameters.Krho: controller tuning parameters
@@ -25,8 +29,21 @@ alpha = normalizeAngle(alpha);
 % parameters.useConstantSpeed: Turn on constant speed option
 % parameters.constantSpeed: The speed used when constant speed option is on
 
-vu = TODO; % [m/s]
-omega = TODO; % [rad/s]
+vu = parameters.Krho * rho; % [m/s]
+if parameters.backwardAllowed
+    if alpha > pi/2 || -pi/2 > alpha
+       vu = -vu;
+       alpha = normalizeAngle(-pi + alpha);
+       beta = normalizeAngle(-pi + beta);
+    end
+end
+    
+omega = parameters.Kalpha * alpha + parameters.Kbeta * beta; % [rad/s]
+
+if parameters.useConstantSpeed
+    omega = omega / abs(vu) * parameters.constantSpeed;
+    vu = vu / abs(vu) * parameters.constantSpeed;
+end
 
 end
 
