@@ -90,7 +90,7 @@ function d = compDistPointsToLine(XY, alpha, r)
 end
 %---------------------------------------------------------------------
 
-function splitPos = findSplitPosInD(d, params)
+function splitPos = findSplitPosInD_(d, params)
     %%% Naive solution %%%
     [val, splitPos] = max(abs(d));
     if splitPos == 1
@@ -101,6 +101,31 @@ function splitPos = findSplitPosInD(d, params)
     if val < params.LINE_POINT_DIST_THRESHOLD
        splitPos = -1;
     end
+end
+
+function splitPos = findSplitPosInD(d, params)
+    N = length(d);
+    
+    % Find the local maximum set (2 points)
+    farOnPositiveSideB = d > params.LINE_POINT_DIST_THRESHOLD;
+    farOnNegativeSideB = d < -params.LINE_POINT_DIST_THRESHOLD;
+    
+    neigborsFarAwayOnTheSameSideI = find((farOnPositiveSideB(1:N-1) & farOnPositiveSideB(2:N)) | (farOnNegativeSideB(1:N-1) & farOnNegativeSideB(2:N)));
+    
+    if (isempty(neigborsFarAwayOnTheSameSideI)
+        splitPos = -1;
+    else
+        absDPairSum = abs(d(neighborsFarAwayOnTheSameSideI)) + abs(d(neighnorsFarAwayOnTheSameSideI + 1));
+        [~, splitPos] = max(absDPairSum);
+        splitPos = neigborsFarAwayOnTheSameSideI(splitPos);
+        if abs(d(splitPos)) <= abs(d(splitPos+1))
+            splitPos = splitPos + 1;
+        end
+    end
+    
+    % If the split position is toward either end of the segment, find
+    % other way to split.
+     
 end
 %---------------------------------------------------------------------
 
